@@ -2,8 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مول بيت مضموم</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مول بيت مضموم - جملة ومفرد</title>
     
     <meta name="theme-color" content="#ff0000">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -25,13 +25,17 @@
         .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
         .cat-card { transition: all 0.4s ease; border-radius: 35px; background: #0f0f0f; border: 1px solid #1a1a1a; cursor: pointer; }
         .cat-card:hover { transform: translateY(-10px); border-color: #ff0000; box-shadow: 0 20px 40px rgba(255,0,0,0.2); }
-        .full-page { display: none; position: fixed; inset: 0; background: #050505; z-index: 1000; overflow-y: auto; }
-        .full-page.active { display: block; animation: slideUp 0.4s ease forwards; }
+        .full-page { display: none; position: fixed; inset: 0; background: #050505; z-index: 1000; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .full-page.active { display: block; animation: slideUp 0.3s ease forwards; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .product-card { background: #0f0f0f; border-radius: 40px; border: 1px solid #1a1a1a; overflow: hidden; position: relative; }
-        .swal2-popup { border-radius: 30px !important; background: #111 !important; color: #fff !important; border: 1px solid #333 !important; font-family: 'Cairo', sans-serif !important; }
-        .swal2-confirm { background-color: #ff0000 !important; border-radius: 15px !important; }
-        .admin-delete-btn { position: absolute; top: 15px; left: 15px; background: rgba(220, 38, 38, 0.9); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 50; cursor: pointer; border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        
+        /* تحسين السلة */
+        #cartItems { max-height: 60vh; overflow-y: auto; padding-bottom: 20px; }
+        #cartItems::-webkit-scrollbar { width: 5px; }
+        #cartItems::-webkit-scrollbar-thumb { background: #ff0000; border-radius: 10px; }
+
+        .admin-delete-btn { position: absolute; top: 15px; left: 15px; background: rgba(220, 38, 38, 0.9); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 50; cursor: pointer; border: 2px solid white; }
     </style>
 </head>
 <body>
@@ -47,8 +51,9 @@
         <div class="w-32 h-32 bg-red-600/10 mx-auto rounded-[40px] mb-8 flex items-center justify-center border border-red-600/20 shadow-[0_0_50px_rgba(255,0,0,0.1)]">
             <i class="fas fa-crown text-6xl text-red-600"></i>
         </div>
-        <h1 class="text-7xl md:text-9xl font-black mb-4 tracking-tighter text-white">مول <span class="text-red-600">بيت مضموم</span></h1>
-        <p class="text-lg text-gray-500 font-bold tracking-[0.4em]">قلعة سكر - حي المعلمين</p>
+        <h1 class="text-6xl md:text-9xl font-black mb-4 tracking-tighter text-white">مول <span class="text-red-600">بيت مضموم</span></h1>
+        <p class="text-2xl font-black text-red-500 mb-2 italic">للبيع بالجملة والمفرد</p>
+        <p class="text-lg text-gray-500 font-bold tracking-[0.2em]">قلعة سكر - حي المعلمين - الشارع العام</p>
     </header>
 
     <div class="max-w-2xl mx-auto px-6 mb-20">
@@ -64,7 +69,7 @@
                 <h2 id="sectionTitle" class="text-3xl font-black text-red-600 italic"></h2>
                 <div class="w-10"></div>
             </div>
-            <input type="text" id="innerSearch" onkeyup="filterProductsRealTime()" placeholder="ابحث عن منتج في هذا القسم..." class="max-w-xl mx-auto w-full bg-black/50 border border-white/10 p-4 rounded-2xl outline-none focus:border-red-600 text-center font-bold">
+            <input type="text" id="innerSearch" onkeyup="filterProductsRealTime()" placeholder="بحث في هذا القسم..." class="max-w-xl mx-auto w-full bg-black/50 border border-white/10 p-4 rounded-2xl outline-none focus:border-red-600 text-center font-bold">
         </div>
         
         <div class="max-w-6xl mx-auto p-8">
@@ -74,8 +79,8 @@
                     <button onclick="adminLogout()" class="bg-red-600/20 text-red-600 px-6 py-2 rounded-full font-bold">تسجيل خروج</button>
                 </div>
                 <div class="grid gap-6">
-                    <input type="text" id="pName" placeholder="اسم المنتج" class="w-full bg-black/40 border border-white/10 p-5 rounded-3xl outline-none">
-                    <input type="text" id="pPrice" placeholder="السعر" class="w-full bg-black/40 border border-white/10 p-5 rounded-3xl outline-none">
+                    <input type="text" id="pName" placeholder="اسم المنتج" class="w-full bg-black/40 border border-white/10 p-5 rounded-3xl outline-none text-white">
+                    <input type="text" id="pPrice" placeholder="السعر" class="w-full bg-black/40 border border-white/10 p-5 rounded-3xl outline-none text-white">
                     <input type="file" id="pImageFile" accept="image/*" class="w-full text-sm text-gray-500">
                     <button onclick="saveNewProduct()" id="uploadBtn" class="bg-red-600 py-5 rounded-3xl font-black text-2xl">نـشـر الآن 🔥</button>
                 </div>
@@ -85,23 +90,22 @@
     </div>
 
     <div id="cartModal" class="full-page">
-        <div class="p-10 border-b border-white/5 flex justify-between items-center bg-[#080808]">
-            <h2 class="text-4xl font-black text-red-600 italic text-center w-full">سلة الطلبات</h2>
-            <button onclick="toggleCart()" class="text-5xl text-gray-600">&times;</button>
+        <div class="sticky top-0 p-8 border-b border-white/5 flex justify-between items-center bg-[#080808] z-50">
+            <h2 class="text-3xl font-black text-red-600 italic">سلة الطلبات</h2>
+            <button onclick="toggleCart()" class="text-4xl text-gray-500">&times;</button>
         </div>
-        <div id="cartItems" class="p-10 space-y-6 pb-60 text-center"></div>
-        <div class="fixed bottom-0 inset-x-0 p-10 bg-black/90 backdrop-blur-xl border-t border-white/5">
-            <button onclick="sendOrder()" class="w-full bg-green-600 py-7 rounded-[40px] font-black text-2xl flex items-center justify-center gap-4"><i class="fab fa-whatsapp text-4xl"></i> إرسال الطلب واتساب</button>
+        <div id="cartItems" class="p-8 space-y-4"></div>
+        <div class="fixed bottom-0 inset-x-0 p-8 bg-black/95 backdrop-blur-xl border-t border-white/5 z-[60]">
+            <button onclick="sendOrder()" class="w-full bg-green-600 py-6 rounded-[35px] font-black text-xl flex items-center justify-center gap-4"><i class="fab fa-whatsapp text-3xl"></i> إرسال الطلب (واتساب)</button>
         </div>
     </div>
 
     <footer class="mt-40 py-24 bg-[#030303] border-t border-white/5 px-8 text-center">
         <button onclick="adminLogin()" class="text-[10px] font-bold tracking-widest text-gray-800 hover:text-red-600 uppercase">دخول الإدارة</button>
-        <p class="mt-10 text-[10px] text-white/5 uppercase tracking-widest italic">MALL BET MADMOOM &copy; 2024</p>
+        <p class="mt-10 text-[12px] text-white/20 uppercase tracking-widest italic font-bold">مول بيت مضموم - لبيع كافة المواد المنزلية (جملة ومفرد)</p>
     </footer>
 
     <script>
-        // إعدادات Firebase الخاصة بك
         const firebaseConfig = {
             apiKey: "AIzaSyCajxAScOpEbQShZ-8JNcqmrf6gFz8ncnE",
             authDomain: "mall-bet-madmoom.firebaseapp.com",
@@ -117,30 +121,33 @@
         const categories = [{n: "قسم المكياج", i: "fa-magic"}, {n: "قسم القرطاسية", i: "fa-pen-fancy"}, {n: "قسم المنظفات", i: "fa-soap"}, {n: "مواد منزلية", i: "fa-blender"}, {n: "هدايا الحج والعمرة", i: "fa-kaaba"}, {n: "أعياد ميلاد", i: "fa-birthday-cake"}, {n: "ألعاب أطفال", i: "fa-robot"}, {n: "ساعات", i: "fa-clock"}, {n: "حقائب سفر", i: "fa-suitcase-rolling"}, {n: "جنط مدرسية", i: "fa-graduation-cap"}, {n: "حجابات وشالات", i: "fa-scroll"}, {n: "جوارب", i: "fa-socks"}, {n: "أقمشة نسائية", i: "fa-cut"}, {n: "خاوليات", i: "fa-swatchbook"}, {n: "حلويات", i: "fa-cookie-bite"}, {n: "بهارات", i: "fa-mortar-pestle"}, {n: "كوشات الأعراس", i: "fa-ring"}, {n: "عطور", i: "fa-air-freshener"}, {n: "شامبو", i: "fa-pump-soap"}, {n: "معجون الأسنان", i: "fa-tooth"}];
         let currentCat = ""; let cart = [];
 
+        // حل مشكلة زر الرجوع في الموبايل
+        window.onpopstate = function() {
+            if(document.getElementById('sectionPage').classList.contains('active')) {
+                closeSection();
+                history.pushState(null, null, window.location.pathname);
+            }
+            if(document.getElementById('cartModal').classList.contains('active')) {
+                toggleCart();
+                history.pushState(null, null, window.location.pathname);
+            }
+        };
+
         function renderCats() { document.getElementById('catGrid').innerHTML = categories.map(cat => `<div onclick="openSection('${cat.n}')" class="cat-card p-10 text-center"><div class="w-16 h-16 bg-red-600/10 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-all"><i class="fas ${cat.i} text-red-600 text-3xl"></i></div><h3 class="font-black text-xs text-white/80">${cat.n}</h3></div>`).join(''); }
         
         function openSection(name) { 
             currentCat = name; 
             document.getElementById('sectionTitle').innerText = name; 
-            document.getElementById('innerSearch').value = ""; // تصفير البحث عند الدخول
             document.getElementById('sectionPage').classList.add('active'); 
+            history.pushState(null, null, window.location.pathname); // إضافة حالة للسجل
             loadProducts(); 
         }
-        
         function closeSection() { document.getElementById('sectionPage').classList.remove('active'); }
 
-        // البحث الفعلي داخل القسم (يخفي المنتجات غير المطابقة فوراً)
         function filterProductsRealTime() {
             let val = document.getElementById('innerSearch').value.toLowerCase();
-            let products = document.querySelectorAll('.product-card');
-            products.forEach(p => {
-                let name = p.getAttribute('data-name');
-                let price = p.getAttribute('data-price');
-                if(name.includes(val) || price.includes(val)) {
-                    p.style.display = "block";
-                } else {
-                    p.style.display = "none";
-                }
+            document.querySelectorAll('.product-card').forEach(p => {
+                p.style.display = (p.getAttribute('data-name').includes(val) || p.getAttribute('data-price').includes(val)) ? "block" : "none";
             });
         }
         
@@ -180,57 +187,44 @@
         }
 
         function deleteProduct(key) {
-            Swal.fire({
-                title: 'حذف المنتج؟',
-                text: "حجي متأكد تريد تمسحه من المول؟",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                confirmButtonText: 'نعم، امسح',
-                cancelButtonText: 'إلغاء'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    db.ref('products/' + currentCat + '/' + key).remove().then(() => {
-                        Swal.fire('تم الحذف!', 'راح المنتج من القسم', 'success');
-                    });
-                }
+            Swal.fire({ title: 'حذف؟', icon: 'warning', showCancelButton: true, confirmButtonText: 'نعم', cancelButtonText: 'لا' }).then(res => {
+                if (res.isConfirmed) db.ref('products/' + currentCat + '/' + key).remove();
             });
         }
 
-        function addToCart(n, p) { cart.push({n, p}); document.getElementById('cartCount').innerText = cart.length; Swal.fire({ title: 'تم الإضافة!', text: n + ' صار بالسلة', icon: 'success', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false }); }
-        function toggleCart() { const modal = document.getElementById('cartModal'); modal.classList.toggle('active'); if(modal.classList.contains('active')) renderCart(); }
+        function addToCart(n, p) { cart.push({n, p}); document.getElementById('cartCount').innerText = cart.length; }
+        function toggleCart() { 
+            const modal = document.getElementById('cartModal'); 
+            modal.classList.toggle('active'); 
+            if(modal.classList.contains('active')) {
+                renderCart();
+                history.pushState(null, null, window.location.pathname);
+            }
+        }
         
         function renderCart() { 
             const div = document.getElementById('cartItems'); 
-            div.innerHTML = cart.length === 0 ? '<div class="py-20 opacity-20"><i class="fas fa-shopping-basket text-9xl mb-4"></i><p class="text-2xl font-black">سلتك فارغة..</p></div>' : 
-            cart.map((item, i) => `<div class="glass p-6 rounded-[30px] flex justify-between items-center mb-4"><div><h4 class="font-black text-xl">${item.n}</h4><p class="text-red-600 font-black">${item.p}</p></div><button onclick="removeFromCart(${i})" class="text-red-600"><i class="fas fa-trash-alt text-2xl"></i></button></div>`).join(''); 
+            div.innerHTML = cart.length === 0 ? '<p class="py-20 opacity-20 text-center font-black">السلة فارغة</p>' : 
+            cart.map((item, i) => `<div class="glass p-5 rounded-[25px] flex justify-between items-center"><div><h4 class="font-black">${item.n}</h4><p class="text-red-600 text-sm">${item.p}</p></div><button onclick="removeFromCart(${i})" class="text-red-600 px-4"><i class="fas fa-trash"></i></button></div>`).join(''); 
         }
 
         function removeFromCart(i) { cart.splice(i,1); document.getElementById('cartCount').innerText = cart.length; renderCart(); }
 
         function sendOrder() { 
-            if(cart.length === 0) return Swal.fire('السلة فارغة', 'حجي ما ضايف شي!', 'info'); 
-            let msg = "*طلب جديد من تطبيق مول بيت مضموم:*%0A%0A"; 
-            cart.forEach((i, idx) => msg += `*${idx+1}.* ${i.n} - السعر: ${i.p}%0A`); 
+            if(cart.length === 0) return;
+            let msg = "*طلب جديد من تطبيق بيت مضموم:*%0A%0A"; 
+            cart.forEach((i, idx) => msg += `${idx+1}. ${i.n} (${i.p})%0A`); 
             window.location.href = "https://wa.me/9647806783721?text=" + msg; 
         }
 
         async function adminLogin() { 
-            const { value: pass } = await Swal.fire({ title: 'دخول الإدارة', input: 'password', inputPlaceholder: 'الرمز السري' }); 
-            if (pass === 'asd.alrahe2001') { localStorage.setItem('isAdmin', 'true'); checkAdminState(); Swal.fire('أهلاً حجي!', 'هسة تقدر تضيف وتمسح', 'success'); } 
-            else if(pass) Swal.fire('خطأ!', 'الرمز غلط', 'error'); 
+            const { value: pass } = await Swal.fire({ title: 'الرمز', input: 'password' }); 
+            if (pass === 'asd.alrahe2001') { localStorage.setItem('isAdmin', 'true'); checkAdminState(); } 
         }
-
-        function adminLogout() {
-            localStorage.removeItem('isAdmin');
-            checkAdminState();
-            Swal.fire('تسجيل خروج', 'تم قفل لوحة التحكم', 'info');
-        }
-
+        function adminLogout() { localStorage.removeItem('isAdmin'); checkAdminState(); }
         function checkAdminState() { 
             const isAdmin = localStorage.getItem('isAdmin') === 'true'; 
-            const tool = document.getElementById('adminTool');
-            if(tool) tool.classList.toggle('hidden', !isAdmin); 
+            if(document.getElementById('adminTool')) document.getElementById('adminTool').classList.toggle('hidden', !isAdmin); 
             document.querySelectorAll('.admin-only').forEach(btn => btn.classList.toggle('hidden', !isAdmin)); 
         }
 
@@ -242,6 +236,7 @@
         }
 
         renderCats(); checkAdminState();
+        history.pushState(null, null, window.location.pathname);
     </script>
 </body>
 </html>
