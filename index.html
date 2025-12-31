@@ -28,9 +28,9 @@
         .full-page { display: none; position: fixed; inset: 0; background: #050505; z-index: 1000; overflow-y: auto; }
         .full-page.active { display: block; animation: slideUp 0.4s ease forwards; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .product-card { background: #0f0f0f; border-radius: 40px; border: 1px solid #1a1a1a; overflow: hidden; }
+        .product-card { background: #0f0f0f; border-radius: 40px; border: 1px solid #1a1a1a; overflow: hidden; position: relative; }
         .swal2-popup { border-radius: 30px !important; background: #111 !important; color: #fff !important; border: 1px solid #333 !important; font-family: 'Cairo', sans-serif !important; }
-        .swal2-confirm { background-color: #ff0000 !important; border-radius: 15px !important; }
+        .swal2-confirm { background-color: #ff0000 !important; border-radius: 15px !important; }.admin-delete-btn { position: absolute; top: 10px; left: 10px; background: rgba(255, 0, 0, 0.8); color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 20; cursor: pointer; border: none; }
     </style>
 </head>
 <body>
@@ -43,8 +43,8 @@
                 <span id="cartCount" class="absolute -top-2 -right-2 bg-white text-red-600 w-7 h-7 rounded-full flex items-center justify-center font-black text-xs border-2 border-red-600">0</span>
             </div>
         </div>
-        <div class="w-24 h-24 bg-red-600/10 mx-auto rounded-[35px] mb-8 flex items-center justify-center border border-red-600/20">
-            <i class="fas fa-crown text-4xl text-red-600"></i>
+        <div class="w-32 h-32 bg-red-600/10 mx-auto rounded-[40px] mb-8 flex items-center justify-center border border-red-600/20 shadow-[0_0_50px_rgba(255,0,0,0.1)]">
+            <i class="fas fa-crown text-6xl text-red-600"></i>
         </div>
         <h1 class="text-7xl md:text-9xl font-black mb-4 tracking-tighter text-white">مول <span class="text-red-600">بيت مضموم</span></h1>
         <p class="text-lg text-gray-500 font-bold tracking-[0.4em]">قلعة سكر - حي المعلمين</p>
@@ -65,10 +65,21 @@
             </div>
             <input type="text" id="innerSearch" onkeyup="filterProducts()" placeholder="بحث في هذا القسم..." class="max-w-xl mx-auto w-full bg-black/50 border border-white/10 p-4 rounded-2xl outline-none focus:border-red-600 text-center font-bold">
         </div>
-        <div class="max-w-6xl mx-auto p-8"><div id="adminTool" class="hidden glass p-10 rounded-[50px] mb-16 border-2 border-dashed border-red-600/30 text-center">
-        <div class="flex justify-between items-center mb-8"><h3 class="text-2xl font-black italic underline decoration-red-600">لوحة التحكم</h3><button onclick="adminLogout()" class="bg-red-600/20 text-red-600 px-6 py-2 rounded-full font-bold">خروج</button></div>
-        <div class="grid gap-6"><input type="text" id="pName" placeholder="اسم المنتج" class="w-full bg-black/40 border border-white/10 p-5 rounded-3xl outline-none"><input type="text" id="pPrice" placeholder="السعر" class="w-full bg-black/40 border border-white/10 p-5 rounded-3xl outline-none"><input type="file" id="pImageFile" accept="image/*" class="w-full text-sm text-gray-500"><button onclick="saveNewProduct()" id="uploadBtn" class="bg-red-600 py-5 rounded-3xl font-black text-2xl">نـشـر الآن 🔥</button></div></div>
-        <div id="productsDisplay" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"></div></div>
+        <div class="max-w-6xl mx-auto p-8">
+            <div id="adminTool" class="hidden glass p-10 rounded-[50px] mb-16 border-2 border-dashed border-red-600/30 text-center">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-2xl font-black italic underline decoration-red-600">لوحة التحكم</h3>
+                    <button onclick="adminLogout()" class="bg-red-600/20 text-red-600 px-6 py-2 rounded-full font-bold">تسجيل خروج</button>
+                </div>
+                <div class="grid gap-6">
+                    <input type="text" id="pName" placeholder="اسم المنتج" class="w-full bg-black/40 border border-white/10 p-5 rounded-3xl outline-none">
+                    <input type="text" id="pPrice" placeholder="السعر" class="w-full bg-black/40 border border-white/10 p-5 rounded-3xl outline-none">
+                    <input type="file" id="pImageFile" accept="image/*" class="w-full text-sm text-gray-500">
+                    <button onclick="saveNewProduct()" id="uploadBtn" class="bg-red-600 py-5 rounded-3xl font-black text-2xl">نـشـر الآن 🔥</button>
+                </div>
+            </div>
+            <div id="productsDisplay" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"></div>
+        </div>
     </div>
 
     <div id="cartModal" class="full-page">
@@ -108,11 +119,12 @@
 
         const categories = [{n: "قسم المكياج", i: "fa-magic"}, {n: "قسم القرطاسية", i: "fa-pen-fancy"}, {n: "قسم المنظفات", i: "fa-soap"}, {n: "مواد منزلية", i: "fa-blender"}, {n: "هدايا الحج والعمرة", i: "fa-kaaba"}, {n: "أعياد ميلاد", i: "fa-birthday-cake"}, {n: "ألعاب أطفال", i: "fa-robot"}, {n: "ساعات", i: "fa-clock"}, {n: "حقائب سفر", i: "fa-suitcase-rolling"}, {n: "جنط مدرسية", i: "fa-graduation-cap"}, {n: "حجابات وشالات", i: "fa-scroll"}, {n: "جوارب", i: "fa-socks"}, {n: "أقمشة نسائية", i: "fa-cut"}, {n: "خاوليات", i: "fa-swatchbook"}, {n: "حلويات", i: "fa-cookie-bite"}, {n: "بهارات", i: "fa-mortar-pestle"}, {n: "كوشات الأعراس", i: "fa-ring"}, {n: "عطور", i: "fa-air-freshener"}, {n: "شامبو", i: "fa-pump-soap"}, {n: "معجون الأسنان", i: "fa-tooth"}];
         let currentCat = ""; let cart = [];
+
         function renderCats() { document.getElementById('catGrid').innerHTML = categories.map(cat => `<div onclick="openSection('${cat.n}')" class="cat-card p-10 text-center"><div class="w-16 h-16 bg-red-600/10 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-all"><i class="fas ${cat.i} text-red-600 text-3xl"></i></div><h3 class="font-black text-xs text-white/80">${cat.n}</h3></div>`).join(''); }
-        function updateHistory(state) { window.history.pushState({ page: state }, ""); }
-        window.onpopstate = function() { if (document.getElementById('sectionPage').classList.contains('active')) closeSection(); else if (document.getElementById('cartModal').classList.contains('active')) toggleCart(); };
-        function openSection(name) { currentCat = name; document.getElementById('sectionTitle').innerText = name; document.getElementById('sectionPage').classList.add('active'); updateHistory('section'); loadProducts(); }
+        
+        function openSection(name) { currentCat = name; document.getElementById('sectionTitle').innerText = name; document.getElementById('sectionPage').classList.add('active'); loadProducts(); }
         function closeSection() { document.getElementById('sectionPage').classList.remove('active'); }
+        
         async function saveNewProduct() {
             const name = document.getElementById('pName').value; const price = document.getElementById('pPrice').value; const file = document.getElementById('pImageFile').files[0];
             if(!name || !price || !file) return Swal.fire('تنبيه', 'حجي املأ البيانات كاملة!', 'warning');
@@ -130,28 +142,85 @@
                 };
             };
         }
+
         function loadProducts() {
             db.ref('products/' + currentCat).on('value', snap => {
                 const data = snap.val(); const display = document.getElementById('productsDisplay');
-                display.innerHTML = data ? Object.keys(data).map(key => `<div class="product-card group relative" data-name="${data[key].name.toLowerCase()}"><img src="${data[key].img}" class="w-full h-80 object-cover shadow-lg"><div class="p-6 text-center"><h4 class="text-xl font-black mb-1">${data[key].name}</h4><p class="text-red-600 text-2xl font-black mb-6">${data[key].price}</p><button onclick="addToCart('${data[key].name}', '${data[key].price}')" class="w-full bg-white text-black py-4 rounded-2xl font-black hover:bg-red-600 hover:text-white transition-all">أضف للسلة <i class="fas fa-plus ml-2"></i></button></div><button onclick="deleteProduct('${key}')" class="admin-only hidden absolute top-4 left-4 bg-black/80 w-10 h-10 rounded-full text-red-600">×</button></div>`).join('') : '<p class="col-span-full py-40 text-center opacity-10 text-3xl font-black">القسم فارغ</p>';
+                display.innerHTML = data ? Object.keys(data).map(key => `
+                    <div class="product-card group" data-name="${data[key].name.toLowerCase()}">
+                        <button class="admin-only hidden admin-delete-btn" onclick="deleteProduct('${key}')"><i class="fas fa-trash"></i></button>
+                        <img src="${data[key].img}" class="w-full h-80 object-cover">
+                        <div class="p-6 text-center">
+                            <h4 class="text-xl font-black mb-1">${data[key].name}</h4>
+                            <p class="text-red-600 text-2xl font-black mb-6">${data[key].price}</p>
+                            <button onclick="addToCart('${data[key].name}', '${data[key].price}')" class="w-full bg-white text-black py-4 rounded-2xl font-black hover:bg-red-600 hover:text-white transition-all">أضف للسلة <i class="fas fa-plus ml-2"></i></button>
+                        </div>
+                    </div>`).join('') : '<p class="col-span-full py-40 text-center opacity-10 text-3xl font-black">القسم فارغ</p>';
                 checkAdminState();
             });
         }
-        function addToCart(n, p) { cart.push({n, p}); document.getElementById('cartCount').innerText = cart.length; Swal.fire({ title: 'تم الإضافة!', text: n + ' صار بالسلة', icon: 'success', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false }); }
-        function toggleCart() { const modal = document.getElementById('cartModal'); if(!modal.classList.contains('active')) { updateHistory('cart'); modal.classList.add('active'); renderCart(); } else { modal.classList.remove('active'); } }
-        function renderCart() { const div = document.getElementById('cartItems'); div.innerHTML = cart.length === 0 ? '<div class="py-20 opacity-20"><i class="fas fa-shopping-basket text-9xl mb-4"></i><p class="text-2xl font-black">سلتك فارغة.. املأها بضاعة!</p></div>' : cart.map((item, i) => `<div class="glass p-6 rounded-[30px] flex justify-between items-center border border-white/5"><div><h4 class="font-black text-xl">${item.n}</h4><p class="text-red-600 font-black">${item.p}</p></div><button onclick="cart.splice(${i},1); renderCart(); document.getElementById('cartCount').innerText=cart.length;" class="text-red-600"><i class="fas fa-trash-alt text-2xl"></i></button></div>`).join(''); }
-        function sendOrder() { if(cart.length === 0) return Swal.fire('السلة فارغة', 'حجي ما ضايف شي!', 'info'); let msg = "*طلب من مول بيت مضموم:*%0A%0A"; cart.forEach((i, idx) => msg += `*${idx+1}.* ${i.n} (${i.p})%0A`); window.location.href = "https://wa.me/9647806783721?text=" + msg; }
-        async function adminLogin() { const { value: pass } = await Swal.fire({ title: 'دخول الإدارة', input: 'password', inputPlaceholder: 'الرمز السري' }); if (pass === 'asd.alrahe2001') { localStorage.setItem('isAdmin', 'true'); checkAdminState(); Swal.fire('أهلاً حجي!', '', 'success'); } else if(pass) Swal.fire('خطأ!', 'الرمز غلط', 'error'); }
-        function checkAdminState() { const isAdmin = localStorage.getItem('isAdmin') === 'true'; document.getElementById('adminTool').classList.toggle('hidden', !isAdmin); document.querySelectorAll('.admin-only').forEach(btn => btn.classList.toggle('hidden', !isAdmin)); }
-        function filterCats() { let val = document.getElementById('searchBox').value.toLowerCase(); Array.from(document.getElementById('catGrid').children).forEach(c => { c.style.display = c.innerText.toLowerCase().includes(val) ? "block" : "none"; }); }
-        renderCats(); checkAdminState();
 
-        // تسجيل الـ Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js');
+        function deleteProduct(key) {
+            Swal.fire({
+                title: 'حذف المنتج؟',
+                text: "حجي متأكد تريد تمسحه؟",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'نعم، امسح',
+                cancelButtonText: 'إلغاء'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    db.ref('products/' + currentCat + '/' + key).remove().then(() => {
+                        Swal.fire('تم الحذف!', '', 'success');
+                    });
+                }
             });
         }
+
+        function addToCart(n, p) { cart.push({n, p}); document.getElementById('cartCount').innerText = cart.length; Swal.fire({ title: 'تم الإضافة!', text: n + ' صار بالسلة', icon: 'success', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false }); }
+        function toggleCart() { const modal = document.getElementById('cartModal'); modal.classList.toggle('active'); if(modal.classList.contains('active')) renderCart(); }
+        
+        function renderCart() { 
+            const div = document.getElementById('cartItems'); 
+            div.innerHTML = cart.length === 0 ? '<div class="py-20 opacity-20"><i class="fas fa-shopping-basket text-9xl mb-4"></i><p class="text-2xl font-black">سلتك فارغة..</p></div>' : 
+            cart.map((item, i) => `<div class="glass p-6 rounded-[30px] flex justify-between items-center mb-4"><div><h4 class="font-black text-xl">${item.n}</h4><p class="text-red-600 font-black">${item.p}</p></div><button onclick="removeFromCart(${i})" class="text-red-600"><i class="fas fa-trash-alt text-2xl"></i></button></div>`).join(''); 
+        }
+
+        function removeFromCart(i) { cart.splice(i,1); document.getElementById('cartCount').innerText = cart.length; renderCart(); }
+
+        function sendOrder() { 
+            if(cart.length === 0) return Swal.fire('السلة فارغة', 'حجي ما ضايف شي!', 'info'); 
+            let msg = "*طلب من مول بيت مضموم:*%0A%0A"; 
+            cart.forEach((i, idx) => msg += `*${idx+1}.* ${i.n} (${i.p})%0A`); 
+            window.location.href = "https://wa.me/9647806783721?text=" + msg; 
+        }
+
+        async function adminLogin() { 
+            const { value: pass } = await Swal.fire({ title: 'دخول الإدارة', input: 'password', inputPlaceholder: 'الرمز السري' }); 
+            if (pass === 'asd.alrahe2001') { localStorage.setItem('isAdmin', 'true'); checkAdminState(); Swal.fire('أهلاً حجي!', '', 'success'); } 
+            else if(pass) Swal.fire('خطأ!', 'الرمز غلط', 'error'); 
+        }
+
+        function adminLogout() {
+            localStorage.removeItem('isAdmin');
+            checkAdminState();
+            Swal.fire('تم تسجيل الخروج', '', 'info');
+        }
+
+        function checkAdminState() { 
+            const isAdmin = localStorage.getItem('isAdmin') === 'true'; 
+            document.getElementById('adminTool').classList.toggle('hidden', !isAdmin); 
+            document.querySelectorAll('.admin-only').forEach(btn => btn.classList.toggle('hidden', !isAdmin)); 
+        }
+
+        function filterCats() { 
+            let val = document.getElementById('searchBox').value.toLowerCase(); 
+            Array.from(document.getElementById('catGrid').children).forEach(c => { 
+                c.style.display = c.innerText.toLowerCase().includes(val) ? "block" : "none"; 
+            }); 
+        }
+
+        renderCats(); checkAdminState();
     </script>
 </body>
 </html>
