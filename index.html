@@ -13,126 +13,134 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #0a0a0a; color: #eee; overflow-x: hidden; margin: 0; }
-        
-        /* البوابة المحسنة */
-        #intro-gate { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; pointer-events: all; }
-        .gate-door { position: absolute; width: 50.5%; height: 100%; background: #000; transition: transform 1.5s cubic-bezier(0.7, 0, 0.3, 1); box-shadow: 0 0 20px rgba(255,0,0,0.2); }
-        .gate-left { left: 0; border-right: 1px solid #333; }
-        .gate-right { right: 0; border-left: 1px solid #333; }
-        
-        /* عند فتح البوابة */
-        .opened .gate-left { transform: translateX(-100%); }
-        .opened .gate-right { transform: translateX(100%); }
-        .opened { pointer-events: none; visibility: hidden; transition-delay: 1.5s; } /* تختفي تماماً بعد الحركة */
+        body { font-family: 'Cairo', sans-serif; background-color: #050505; color: #eee; overflow: hidden; margin: 0; }
 
-        .gate-content { position: relative; z-index: 10000; text-align: center; transition: opacity 0.5s ease; }
-        .opened .gate-content { opacity: 0; }
+        /* بوابة الليزر المطورة */
+        #gate-container { position: fixed; inset: 0; z-index: 9999; background: #000; display: flex; align-items: center; justify-content: center; }
+        .door { position: absolute; width: 50.5%; height: 100%; background: #080808; transition: all 1.2s cubic-bezier(0.9, 0, 0.1, 1); border: 1px solid #1a1a1a; }
+        .door-left { left: 0; border-right: 2px solid #ff0000; }
+        .door-right { right: 0; border-left: 2px solid #ff0000; }
+        
+        .laser-line { 
+            position: absolute; width: 100%; height: 5px; background: #ff0000;
+            box-shadow: 0 0 15px #ff0000, 0 0 30px #ff0000; z-index: 10001;
+            top: -10%; animation: scan-anim 2s infinite linear;
+        }
+        @keyframes scan-anim { 0%, 100% { top: 0%; } 50% { top: 100%; } }
 
-        /* النجوم والخلفية */
+        .scanner-ui { position: relative; z-index: 10002; text-align: center; }
+        .status-msg { color: #ff0000; font-weight: 900; font-size: 1.2rem; margin-top: 20px; text-shadow: 0 0 10px #ff0000; }
+        
+        .gate-open .door-left { transform: translateX(-100%); }
+        .gate-open .door-right { transform: translateX(100%); }
+        .gate-open .laser-line, .gate-open .scanner-ui { opacity: 0; visibility: hidden; }
+        .gate-open { pointer-events: none; visibility: hidden; transition: all 1s 1.2s; }
+
+        /* الخلفية والنجوم */
         #star-canvas { position: fixed; inset: 0; z-index: -1; }
         .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); }
+
+        /* كروت المنتجات */
+        .product-card { background: #0f0f0f; border-radius: 30px; border: 1px solid #1a1a1a; overflow: hidden; transition: 0.3s; transform-style: preserve-3d; }
+        .flying-img { position: fixed; z-index: 9000; pointer-events: none; border-radius: 20px; transition: all 0.8s cubic-bezier(0.6, -0.28, 0.73, 0.05); object-fit: cover; }
         
-        .product-card { background: #111; border-radius: 30px; border: 1px solid #222; overflow: hidden; transition: transform 0.3s ease; }
-        .flying-img { position: fixed; z-index: 9000; pointer-events: none; border-radius: 15px; transition: all 0.8s ease-in; object-fit: cover; }
+        .full-page { display: none; position: fixed; inset: 0; background: #050505; z-index: 1000; overflow-y: auto; }
+        .full-page.active { display: block; animation: slideUp 0.4s forwards; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div id="intro-gate">
-        <div class="gate-content">
-            <div class="w-24 h-24 bg-red-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-600/50">
-                <i class="fas fa-crown text-red-600 text-5xl animate-pulse"></i>
-            </div>
-            <h2 class="text-3xl font-black text-white">بيت مضموم</h2>
-            <p class="text-gray-400 text-sm mt-2 tracking-widest">يـتـم التحميـل...</p>
+    <div id="gate-container">
+        <div class="laser-line"></div>
+        <div class="scanner-ui">
+            <i class="fas fa-crown text-red-600 text-6xl mb-4 animate-bounce"></i>
+            <h2 class="text-4xl font-black text-white italic">بيت مضموم</h2>
+            <div id="status" class="status-msg">جارِ فحص الهوية...</div>
         </div>
-        <div class="gate-door gate-left"></div>
-        <div class="gate-door gate-right"></div>
+        <div class="door door-left"></div>
+        <div class="door door-right"></div>
     </div>
+
+    <audio id="scanSound" src="https://www.soundjay.com/buttons/sounds/button-20.mp3" preload="auto"></audio>
+    <audio id="openSound" src="https://www.soundjay.com/mechanical/sounds/mechanical-clunk-1.mp3" preload="auto"></audio>
 
     <canvas id="star-canvas"></canvas>
 
-    <header class="pt-24 pb-12 text-center px-6">
-        <div id="mainCartBtn" class="fixed top-6 left-6 z-[60] cursor-pointer" onclick="toggleCart()">
-            <div class="glass p-4 rounded-2xl relative">
-                <i class="fas fa-shopping-basket text-2xl text-red-600"></i>
-                <span id="cartCount" class="absolute -top-2 -right-2 bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">0</span>
-            </div>
-        </div>
-        <h1 class="text-5xl md:text-8xl font-black mb-2 text-white">مول <span class="text-red-600">بيت مضموم</span></h1>
-        <p class="text-xl font-bold text-red-500 italic mb-1">للبيع بالجملة والمفرد</p>
-        <p class="text-sm text-gray-500 font-bold uppercase tracking-widest">قلعة سكر - شارع المجمعات</p>
-    </header>
-
-    <div class="max-w-xl mx-auto px-6 mb-16">
-        <input type="text" id="searchBox" onkeyup="filterCats()" placeholder="بحث عن قسم..." class="w-full bg-[#111] border border-white/10 p-5 rounded-3xl outline-none focus:border-red-600 text-center font-bold text-white shadow-2xl">
-    </div>
-
-    <main class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 pb-32" id="catGrid"></main>
-
-    <div id="sectionPage" class="full-page fixed inset-0 bg-[#0a0a0a] z-[100] hidden overflow-y-auto">
-        <div class="sticky top-0 glass p-5 flex justify-between items-center z-50">
-            <button onclick="closeSection()" class="text-white font-bold"><i class="fas fa-arrow-right ml-2"></i> رجوع</button>
-            <h2 id="sectionTitle" class="text-xl font-black text-red-600"></h2>
-            <div class="w-8"></div>
-        </div>
-        <div class="p-6">
-            <div id="adminTool" class="hidden glass p-6 rounded-3xl mb-10 text-center">
-                <h3 class="text-white mb-4 font-bold">إضافة منتج جديد</h3>
-                <div class="flex flex-col gap-3">
-                    <input type="text" id="pName" placeholder="الاسم" class="bg-black/50 p-4 rounded-2xl text-white text-center border border-white/10">
-                    <input type="text" id="pPrice" placeholder="السعر" class="bg-black/50 p-4 rounded-2xl text-white text-center border border-white/10">
-                    <input type="file" id="pImageFile" class="text-white text-xs">
-                    <button onclick="saveNewProduct()" id="uploadBtn" class="bg-red-600 p-4 rounded-2xl text-white font-bold">نـشـر</button>
-                    <button onclick="adminLogout()" class="text-gray-500 text-xs mt-2">خروج الإدارة</button>
+    <div id="main-content">
+        <header class="pt-24 pb-12 text-center px-6">
+            <div id="mainCartBtn" class="fixed top-6 left-6 z-[60] cursor-pointer shadow-2xl" onclick="toggleCart()">
+                <div class="glass p-5 rounded-[25px] relative border-red-600/20 border">
+                    <i class="fas fa-shopping-basket text-3xl text-red-600"></i>
+                    <span id="cartCount" class="absolute -top-2 -right-2 bg-white text-red-600 w-7 h-7 rounded-full flex items-center justify-center font-black text-xs">0</span>
                 </div>
             </div>
-            <div id="productsDisplay" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+            <h1 class="text-6xl md:text-9xl font-black mb-2 text-white">مول <span class="text-red-600">بيت مضموم</span></h1>
+            <p class="text-2xl font-black text-red-500 italic mb-2">للبيع بالجملة والمفرد</p>
+            <p class="text-gray-400 font-bold tracking-widest uppercase">قلعة سكر - شارع المجمعات</p>
+        </header>
+
+        <div class="max-w-2xl mx-auto px-6 mb-20">
+            <input type="text" id="searchBox" onkeyup="filterCats()" placeholder="بحث عن قسم..." class="w-full bg-[#111] border border-white/5 p-6 rounded-[35px] outline-none focus:border-red-600 text-center font-bold text-2xl text-white shadow-xl">
+        </div>
+
+        <main class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 pb-32" id="catGrid"></main>
+    </div>
+
+    <div id="sectionPage" class="full-page">
+        <div class="sticky top-0 glass p-6 flex justify-between items-center z-50">
+            <button onclick="closeSection()" class="text-white font-bold text-xl"><i class="fas fa-arrow-right ml-2"></i> رجوع</button>
+            <h2 id="sectionTitle" class="text-3xl font-black text-red-600 italic"></h2>
+            <div class="w-10"></div>
+        </div>
+        <div class="max-w-6xl mx-auto p-8">
+            <div id="adminTool" class="hidden glass p-10 rounded-[40px] mb-16 border-2 border-dashed border-red-600/30">
+                <div class="grid gap-4">
+                    <input type="text" id="pName" placeholder="اسم المنتج" class="w-full bg-black/40 border border-white/10 p-5 rounded-3xl text-white text-center">
+                    <input type="text" id="pPrice" placeholder="السعر" class="w-full bg-black/40 border border-white/10 p-5 rounded-3xl text-white text-center">
+                    <input type="file" id="pImageFile" class="text-white">
+                    <button onclick="saveNewProduct()" class="bg-red-600 py-5 rounded-3xl font-black text-white text-xl shadow-lg">نـشر الآن 🔥</button>
+                    <button onclick="adminLogout()" class="text-gray-500 text-sm">تسجيل خروج الإدارة</button>
+                </div>
+            </div>
+            <div id="productsDisplay" class="grid grid-cols-1 md:grid-cols-3 gap-10"></div>
         </div>
     </div>
 
-    <div id="cartModal" class="full-page fixed inset-0 bg-[#0a0a0a] z-[100] hidden overflow-y-auto">
-        <div class="p-6">
-            <div class="flex justify-between items-center mb-10">
-                <h2 class="text-3xl font-black text-red-600">سلتك</h2>
-                <button onclick="toggleCart()" class="text-white text-3xl">&times;</button>
-            </div>
-            <div id="cartItems" class="space-y-4 mb-32"></div>
-            <div class="fixed bottom-0 left-0 w-full p-6 glass">
-                <button onclick="sendOrder()" class="w-full bg-green-600 p-5 rounded-3xl text-white font-black text-lg flex items-center justify-center gap-3">
-                    <i class="fab fa-whatsapp text-2xl"></i> اطلب الآن
-                </button>
-            </div>
+    <div id="cartModal" class="full-page">
+        <div class="p-8 border-b border-white/5 flex justify-between items-center">
+            <h2 class="text-3xl font-black text-red-600">سلة الطلبات</h2>
+            <button onclick="toggleCart()" class="text-white text-5xl">&times;</button>
+        </div>
+        <div id="cartItems" class="p-8 space-y-4 pb-40"></div>
+        <div class="fixed bottom-0 inset-x-0 p-8 glass z-[100]">
+            <button onclick="sendOrder()" class="w-full bg-green-600 py-6 rounded-[35px] font-black text-white text-xl flex items-center justify-center gap-4">
+                <i class="fab fa-whatsapp text-3xl"></i> إرسال عبر واتساب
+            </button>
         </div>
     </div>
 
-    <footer class="py-20 text-center opacity-20">
-        <button onclick="adminLogin()" class="text-xs text-white">إعدادات</button>
+    <footer class="py-20 text-center opacity-10">
+        <button onclick="adminLogin()" class="text-xs text-white uppercase tracking-widest">Settings</button>
     </footer>
 
     <script>
-        // كود تشغيل البوابة وتلاشيها
-        window.addEventListener('load', () => {
+        // نظام البوابة والأصوات
+        window.addEventListener('click', () => { document.getElementById('scanSound').play(); }, { once: true });
+
+        setTimeout(() => {
+            const status = document.getElementById('status');
+            status.innerText = "تم التحقق - الدخول مسموح";
+            status.style.color = "#00ff00"; status.style.textShadow = "0 0 10px #00ff00";
+            
             setTimeout(() => {
-                document.getElementById('intro-gate').classList.add('opened');
-            }, 2000);
-        });
+                document.getElementById('openSound').play();
+                document.getElementById('gate-container').classList.add('gate-open');
+                document.body.style.overflow = "auto";
+            }, 1000);
+        }, 3000);
 
-        // خلفية النجوم
-        const canvas = document.getElementById('star-canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        let stars = Array(60).fill().map(() => ({x: Math.random()*canvas.width, y: Math.random()*canvas.height, s: Math.random()*1}));
-        function animateStars() {
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-            ctx.fillStyle = "rgba(255,255,255,0.3)";
-            stars.forEach(s => { ctx.beginPath(); ctx.arc(s.x, s.y, s.s, 0, Math.PI*2); ctx.fill(); s.y += 0.2; if(s.y > canvas.height) s.y = 0; });
-            requestAnimationFrame(animateStars);
-        }
-        animateStars();
-
-        // Firebase Config
+        // Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyCajxAScOpEbQShZ-8JNcqmrf6gFz8ncnE",
             authDomain: "mall-bet-madmoom.firebaseapp.com",
@@ -145,22 +153,20 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const categories = [{n: "قسم المكياج", i: "fa-magic"}, {n: "قسم القرطاسية", i: "fa-pen-fancy"}, {n: "قسم المنظفات", i: "fa-soap"}, {n: "مواد منزلية", i: "fa-blender"}, {n: "هدايا الحج والعمرة", i: "fa-kaaba"}, {n: "أعياد ميلاد", i: "fa-birthday-cake"}, {n: "ألعاب أطفال", i: "fa-robot"}, {n: "ساعات", i: "fa-clock"}, {n: "حقائب سفر", i: "fa-suitcase-rolling"}, {n: "جنط مدرسية", i: "fa-graduation-cap"}, {n: "حجابات وشالات", i: "fa-scroll"}, {n: "جوارب", i: "fa-socks"}, {n: "أقمشة نسائية", i: "fa-cut"}, {n: "خاوليات", i: "fa-swatchbook"}, {n: "حلويات", i: "fa-cookie-bite"}, {n: "بهارات", i: "fa-mortar-pestle"}, {n: "كوشات الأعراس", i: "fa-ring"}, {n: "عطور", i: "fa-air-freshener"}, {n: "شامبو", i: "fa-pump-soap"}, {n: "معجون الأسنان", i: "fa-tooth"}];
+        const categories = [{n: "قسم المكياج", i: "fa-magic"}, {n: "قسم القرطاسية", i: "fa-pen-fancy"}, {n: "قسم المنظفات", i: "fa-soap"}, {n: "مواد منزلية", i: "fa-blender"}, {n: "ألعاب أطفال", i: "fa-robot"}, {n: "ساعات", i: "fa-clock"}, {n: "عطور", i: "fa-air-freshener"}];
         let currentCat = ""; let cart = [];
 
         function renderCats() {
             document.getElementById('catGrid').innerHTML = categories.map(cat => `
-                <div onclick="openSection('${cat.n}')" class="glass p-8 text-center rounded-[30px] cursor-pointer active:scale-95 transition-all">
-                    <i class="fas ${cat.i} text-red-600 text-3xl mb-3"></i>
-                    <h3 class="text-xs font-black text-white">${cat.n}</h3>
-                </div>
-            `).join('');
+                <div onclick="openSection('${cat.n}')" class="glass p-10 text-center rounded-[40px] cursor-pointer hover:border-red-600/50 transition-all active:scale-95">
+                    <i class="fas ${cat.i} text-red-600 text-4xl mb-4"></i>
+                    <h3 class="font-black text-white text-sm">${cat.n}</h3>
+                </div>`).join('');
         }
 
-        function openSection(n) {
-            currentCat = n;
-            document.getElementById('sectionTitle').innerText = n;
-            document.getElementById('sectionPage').classList.remove('hidden');
+        function openSection(name) {
+            currentCat = name; document.getElementById('sectionTitle').innerText = name;
+            document.getElementById('sectionPage').classList.add('active');
             loadProducts();
         }
 
@@ -168,74 +174,71 @@
             db.ref('products/' + currentCat).on('value', snap => {
                 const data = snap.val();
                 document.getElementById('productsDisplay').innerHTML = data ? Object.keys(data).map(key => `
-                    <div class="product-card">
-                        <img src="${data[key].img}" class="w-full h-64 object-cover">
-                        <div class="p-5 text-center">
-                            <h4 class="text-white font-bold">${data[key].name}</h4>
-                            <p class="text-red-600 font-black text-xl mb-4">${data[key].price}</p>
-                            <button onclick="flyToCart(this, '${data[key].name}', '${data[key].price}')" class="w-full bg-white text-black py-3 rounded-2xl font-black">إضافة</button>
-                            ${localStorage.getItem('isAdmin') === 'true' ? `<button onclick="deleteProduct('${key}')" class="text-red-500 mt-4 text-xs">حذف</button>` : ''}
+                    <div class="product-card group" onmousemove="handle3D(event, this)" onmouseleave="reset3D(this)">
+                        <img src="${data[key].img}" class="w-full h-72 object-cover">
+                        <div class="p-6 text-center">
+                            <h4 class="text-xl font-bold text-white">${data[key].name}</h4>
+                            <p class="text-red-600 text-2xl font-black mb-4">${data[key].price}</p>
+                            <button onclick="flyToCart(this, '${data[key].name}', '${data[key].price}')" class="w-full bg-white text-black py-4 rounded-2xl font-black">إضافة للسلة</button>
+                            ${localStorage.getItem('isAdmin') === 'true' ? `<button onclick="deleteProduct('${key}')" class="text-red-500 mt-4 text-xs">حذف المنتج</button>` : ''}
                         </div>
-                    </div>`).join('') : '<p class="text-white text-center opacity-20 col-span-full py-10">فارغ حالياً</p>';
+                    </div>`).join('') : '<p class="col-span-full text-center text-white opacity-20 py-20">لا يوجد منتجات حالياً</p>';
                 checkAdminState();
             });
         }
 
+        function handle3D(e, card) {
+            const rect = card.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width - 0.5;
+            const y = (e.clientY - rect.top) / rect.height - 0.5;
+            card.style.transform = `perspective(1000px) rotateY(${x * 20}deg) rotateX(${-y * 20}deg) scale3d(1.05, 1.05, 1.05)`;
+        }
+        function reset3D(card) { card.style.transform = "perspective(1000px) rotateY(0deg) rotateX(0deg) scale3d(1, 1, 1)"; }
+
         function flyToCart(btn, name, price) {
             const img = btn.closest('.product-card').querySelector('img');
             const cartBtn = document.getElementById('mainCartBtn');
-            const fly = img.cloneNode();
+            const flyImg = img.cloneNode();
             const rect = img.getBoundingClientRect();
-            const cRect = cartBtn.getBoundingClientRect();
-
-            fly.className = 'flying-img';
-            fly.style.cssText = `width:${rect.width}px; height:${rect.height}px; top:${rect.top}px; left:${rect.left}px;`;
-            document.body.appendChild(fly);
-
-            setTimeout(() => {
-                fly.style.cssText = `width:20px; height:20px; top:${cRect.top}px; left:${cRect.left}px; opacity:0;`;
-            }, 50);
-
-            setTimeout(() => {
-                fly.remove();
-                cart.push({n:name, p:price});
-                document.getElementById('cartCount').innerText = cart.length;
-            }, 800);
+            const cartRect = cartBtn.getBoundingClientRect();
+            flyImg.className = 'flying-img';
+            flyImg.style.cssText = `width:${rect.width}px; height:${rect.height}px; top:${rect.top}px; left:${rect.left}px;`;
+            document.body.appendChild(flyImg);
+            setTimeout(() => { flyImg.style.cssText = `width:20px; height:20px; top:${cartRect.top}px; left:${cartRect.left}px; opacity:0;`; }, 50);
+            setTimeout(() => { flyImg.remove(); cart.push({n: name, p: price}); updateCartCount(); }, 800);
         }
+
+        function updateCartCount() { document.getElementById('cartCount').innerText = cart.length; }
 
         async function adminLogin() {
-            const { value: pass } = await Swal.fire({ title: 'الرمز', input: 'password' });
-            if(pass === 'asd.alrahe2001') { localStorage.setItem('isAdmin', 'true'); location.reload(); }
+            const { value: pass } = await Swal.fire({ title: 'رمز الدخول', input: 'password', confirmButtonColor: '#ff0000' });
+            if (pass === 'asd.alrahe2001') { localStorage.setItem('isAdmin', 'true'); location.reload(); }
         }
-
         function adminLogout() { localStorage.removeItem('isAdmin'); location.reload(); }
-
         function checkAdminState() {
             const isAdmin = localStorage.getItem('isAdmin') === 'true';
-            const tool = document.getElementById('adminTool');
-            if(tool) tool.classList.toggle('hidden', !isAdmin);
+            if (document.getElementById('adminTool')) document.getElementById('adminTool').classList.toggle('hidden', !isAdmin);
         }
 
         async function saveNewProduct() {
-            const n = document.getElementById('pName').value;
-            const p = document.getElementById('pPrice').value;
-            const f = document.getElementById('pImageFile').files[0];
-            if(!n || !p || !f) return;
-            const reader = new FileReader();
-            reader.readAsDataURL(f);
+            const name = document.getElementById('pName').value;
+            const price = document.getElementById('pPrice').value;
+            const file = document.getElementById('pImageFile').files[0];
+            if (!name || !price || !file) return;
+            const reader = new FileReader(); reader.readAsDataURL(file);
             reader.onload = async (e) => {
-                await db.ref('products/' + currentCat).push({ name: n, price: p, img: e.target.result });
-                Swal.fire('تم!', '', 'success');
-            }
+                await db.ref('products/' + currentCat).push({ name, price, img: e.target.result });
+                Swal.fire('تم النشر!', '', 'success');
+            };
         }
 
-        function deleteProduct(k) { db.ref('products/' + currentCat + '/' + k).remove(); }
-        function toggleCart() { document.getElementById('cartModal').classList.toggle('hidden'); renderCart(); }
+        function deleteProduct(key) { db.ref('products/' + currentCat + '/' + key).remove(); }
+        function toggleCart() { document.getElementById('cartModal').classList.toggle('active'); renderCart(); }
         function renderCart() {
             document.getElementById('cartItems').innerHTML = cart.map((item, i) => `
-                <div class="glass p-4 rounded-2xl flex justify-between items-center text-white">
-                    <span>${item.n} - ${item.p}</span>
-                    <button onclick="cart.splice(${i},1); renderCart();" class="text-red-600"><i class="fas fa-trash"></i></button>
+                <div class="glass p-5 rounded-3xl flex justify-between items-center text-white">
+                    <div><h4 class="font-bold">${item.n}</h4><p class="text-red-500">${item.p}</p></div>
+                    <button onclick="cart.splice(${i},1); renderCart(); updateCartCount();" class="text-red-600"><i class="fas fa-trash"></i></button>
                 </div>`).join('');
         }
 
@@ -245,16 +248,25 @@
             window.location.href = "https://wa.me/9647806783721?text=" + msg;
         }
 
-        function closeSection() { document.getElementById('sectionPage').classList.add('hidden'); }
+        function closeSection() { document.getElementById('sectionPage').classList.remove('active'); }
         function filterCats() {
-            let v = document.getElementById('searchBox').value.toLowerCase();
+            let val = document.getElementById('searchBox').value.toLowerCase();
             Array.from(document.getElementById('catGrid').children).forEach(c => {
-                c.style.display = c.innerText.toLowerCase().includes(v) ? "block" : "none";
+                c.style.display = c.innerText.toLowerCase().includes(val) ? "block" : "none";
             });
         }
 
-        renderCats();
-        checkAdminState();
+        // نجوم الخلفية
+        const canvas = document.getElementById('star-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        let stars = Array(70).fill().map(() => ({x: Math.random()*canvas.width, y: Math.random()*canvas.height, s: Math.random()*1.5}));
+        function draw() {
+            ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle = "rgba(255,255,255,0.3)";
+            stars.forEach(s => { ctx.beginPath(); ctx.arc(s.x, s.y, s.s, 0, Math.PI*2); ctx.fill(); s.y += 0.2; if(s.y > canvas.height) s.y = 0; });
+            requestAnimationFrame(draw);
+        }
+        draw(); renderCats(); checkAdminState();
     </script>
 </body>
 </html>
