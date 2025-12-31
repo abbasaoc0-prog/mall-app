@@ -30,7 +30,8 @@
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .product-card { background: #0f0f0f; border-radius: 40px; border: 1px solid #1a1a1a; overflow: hidden; position: relative; }
         .swal2-popup { border-radius: 30px !important; background: #111 !important; color: #fff !important; border: 1px solid #333 !important; font-family: 'Cairo', sans-serif !important; }
-        .swal2-confirm { background-color: #ff0000 !important; border-radius: 15px !important; }.admin-delete-btn { position: absolute; top: 10px; left: 10px; background: rgba(255, 0, 0, 0.8); color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 20; cursor: pointer; border: none; }
+        .swal2-confirm { background-color: #ff0000 !important; border-radius: 15px !important; }
+        .admin-delete-btn { position: absolute; top: 15px; left: 15px; background: rgba(220, 38, 38, 0.9); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 50; cursor: pointer; border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
@@ -63,8 +64,9 @@
                 <h2 id="sectionTitle" class="text-3xl font-black text-red-600 italic"></h2>
                 <div class="w-10"></div>
             </div>
-            <input type="text" id="innerSearch" onkeyup="filterProducts()" placeholder="بحث في هذا القسم..." class="max-w-xl mx-auto w-full bg-black/50 border border-white/10 p-4 rounded-2xl outline-none focus:border-red-600 text-center font-bold">
+            <input type="text" id="innerSearch" onkeyup="filterProductsRealTime()" placeholder="ابحث عن منتج في هذا القسم..." class="max-w-xl mx-auto w-full bg-black/50 border border-white/10 p-4 rounded-2xl outline-none focus:border-red-600 text-center font-bold">
         </div>
+        
         <div class="max-w-6xl mx-auto p-8">
             <div id="adminTool" class="hidden glass p-10 rounded-[50px] mb-16 border-2 border-dashed border-red-600/30 text-center">
                 <div class="flex justify-between items-center mb-8">
@@ -94,17 +96,12 @@
     </div>
 
     <footer class="mt-40 py-24 bg-[#030303] border-t border-white/5 px-8 text-center">
-        <div class="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
-            <a href="https://wa.me/9647806783721" class="glass p-5 rounded-3xl font-bold text-xs">واتساب ليث</a>
-            <a href="https://wa.me/9647827251751" class="glass p-5 rounded-3xl font-bold text-xs">واتساب أبو ليث</a>
-            <a href="https://wa.me/9647815621448" class="glass p-5 rounded-3xl font-bold text-xs">واتساب غيث</a>
-            <a href="https://wa.me/9647817347272" class="glass p-5 rounded-3xl font-bold text-xs">واتساب أحمد</a>
-        </div>
         <button onclick="adminLogin()" class="text-[10px] font-bold tracking-widest text-gray-800 hover:text-red-600 uppercase">دخول الإدارة</button>
         <p class="mt-10 text-[10px] text-white/5 uppercase tracking-widest italic">MALL BET MADMOOM &copy; 2024</p>
     </footer>
 
     <script>
+        // إعدادات Firebase الخاصة بك
         const firebaseConfig = {
             apiKey: "AIzaSyCajxAScOpEbQShZ-8JNcqmrf6gFz8ncnE",
             authDomain: "mall-bet-madmoom.firebaseapp.com",
@@ -122,8 +119,30 @@
 
         function renderCats() { document.getElementById('catGrid').innerHTML = categories.map(cat => `<div onclick="openSection('${cat.n}')" class="cat-card p-10 text-center"><div class="w-16 h-16 bg-red-600/10 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-all"><i class="fas ${cat.i} text-red-600 text-3xl"></i></div><h3 class="font-black text-xs text-white/80">${cat.n}</h3></div>`).join(''); }
         
-        function openSection(name) { currentCat = name; document.getElementById('sectionTitle').innerText = name; document.getElementById('sectionPage').classList.add('active'); loadProducts(); }
+        function openSection(name) { 
+            currentCat = name; 
+            document.getElementById('sectionTitle').innerText = name; 
+            document.getElementById('innerSearch').value = ""; // تصفير البحث عند الدخول
+            document.getElementById('sectionPage').classList.add('active'); 
+            loadProducts(); 
+        }
+        
         function closeSection() { document.getElementById('sectionPage').classList.remove('active'); }
+
+        // البحث الفعلي داخل القسم (يخفي المنتجات غير المطابقة فوراً)
+        function filterProductsRealTime() {
+            let val = document.getElementById('innerSearch').value.toLowerCase();
+            let products = document.querySelectorAll('.product-card');
+            products.forEach(p => {
+                let name = p.getAttribute('data-name');
+                let price = p.getAttribute('data-price');
+                if(name.includes(val) || price.includes(val)) {
+                    p.style.display = "block";
+                } else {
+                    p.style.display = "none";
+                }
+            });
+        }
         
         async function saveNewProduct() {
             const name = document.getElementById('pName').value; const price = document.getElementById('pPrice').value; const file = document.getElementById('pImageFile').files[0];
@@ -147,7 +166,7 @@
             db.ref('products/' + currentCat).on('value', snap => {
                 const data = snap.val(); const display = document.getElementById('productsDisplay');
                 display.innerHTML = data ? Object.keys(data).map(key => `
-                    <div class="product-card group" data-name="${data[key].name.toLowerCase()}">
+                    <div class="product-card group" data-name="${data[key].name.toLowerCase()}" data-price="${data[key].price.toLowerCase()}">
                         <button class="admin-only hidden admin-delete-btn" onclick="deleteProduct('${key}')"><i class="fas fa-trash"></i></button>
                         <img src="${data[key].img}" class="w-full h-80 object-cover">
                         <div class="p-6 text-center">
@@ -163,15 +182,16 @@
         function deleteProduct(key) {
             Swal.fire({
                 title: 'حذف المنتج؟',
-                text: "حجي متأكد تريد تمسحه؟",
+                text: "حجي متأكد تريد تمسحه من المول؟",
                 icon: 'warning',
                 showCancelButton: true,
+                confirmButtonColor: '#d33',
                 confirmButtonText: 'نعم، امسح',
                 cancelButtonText: 'إلغاء'
             }).then((result) => {
                 if (result.isConfirmed) {
                     db.ref('products/' + currentCat + '/' + key).remove().then(() => {
-                        Swal.fire('تم الحذف!', '', 'success');
+                        Swal.fire('تم الحذف!', 'راح المنتج من القسم', 'success');
                     });
                 }
             });
@@ -190,26 +210,27 @@
 
         function sendOrder() { 
             if(cart.length === 0) return Swal.fire('السلة فارغة', 'حجي ما ضايف شي!', 'info'); 
-            let msg = "*طلب من مول بيت مضموم:*%0A%0A"; 
-            cart.forEach((i, idx) => msg += `*${idx+1}.* ${i.n} (${i.p})%0A`); 
+            let msg = "*طلب جديد من تطبيق مول بيت مضموم:*%0A%0A"; 
+            cart.forEach((i, idx) => msg += `*${idx+1}.* ${i.n} - السعر: ${i.p}%0A`); 
             window.location.href = "https://wa.me/9647806783721?text=" + msg; 
         }
 
         async function adminLogin() { 
             const { value: pass } = await Swal.fire({ title: 'دخول الإدارة', input: 'password', inputPlaceholder: 'الرمز السري' }); 
-            if (pass === 'asd.alrahe2001') { localStorage.setItem('isAdmin', 'true'); checkAdminState(); Swal.fire('أهلاً حجي!', '', 'success'); } 
+            if (pass === 'asd.alrahe2001') { localStorage.setItem('isAdmin', 'true'); checkAdminState(); Swal.fire('أهلاً حجي!', 'هسة تقدر تضيف وتمسح', 'success'); } 
             else if(pass) Swal.fire('خطأ!', 'الرمز غلط', 'error'); 
         }
 
         function adminLogout() {
             localStorage.removeItem('isAdmin');
             checkAdminState();
-            Swal.fire('تم تسجيل الخروج', '', 'info');
+            Swal.fire('تسجيل خروج', 'تم قفل لوحة التحكم', 'info');
         }
 
         function checkAdminState() { 
             const isAdmin = localStorage.getItem('isAdmin') === 'true'; 
-            document.getElementById('adminTool').classList.toggle('hidden', !isAdmin); 
+            const tool = document.getElementById('adminTool');
+            if(tool) tool.classList.toggle('hidden', !isAdmin); 
             document.querySelectorAll('.admin-only').forEach(btn => btn.classList.toggle('hidden', !isAdmin)); 
         }
 
