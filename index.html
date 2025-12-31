@@ -30,6 +30,16 @@
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .product-card { background: #0f0f0f; border-radius: 40px; border: 1px solid #1a1a1a; overflow: hidden; position: relative; }
         
+        /* تأثير السلة الطائرة */
+        .flying-icon {
+            position: fixed;
+            z-index: 9999;
+            pointer-events: none;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #ff0000;
+            font-size: 2rem;
+        }
+
         /* تحسين السلة */
         #cartItems { max-height: 60vh; overflow-y: auto; padding-bottom: 20px; }
         #cartItems::-webkit-scrollbar { width: 5px; }
@@ -42,7 +52,7 @@
     <div class="bg-glow"></div>
 
     <header class="pt-20 pb-16 text-center relative px-6">
-        <div class="fixed top-6 left-6 z-[60] cursor-pointer" onclick="toggleCart()">
+        <div id="mainCartBtn" class="fixed top-6 left-6 z-[60] cursor-pointer" onclick="toggleCart()">
             <div class="glass p-5 rounded-[25px] relative shadow-2xl">
                 <i class="fas fa-shopping-basket text-3xl text-red-600"></i>
                 <span id="cartCount" class="absolute -top-2 -right-2 bg-white text-red-600 w-7 h-7 rounded-full flex items-center justify-center font-black text-xs border-2 border-red-600">0</span>
@@ -53,11 +63,11 @@
         </div>
         <h1 class="text-6xl md:text-9xl font-black mb-4 tracking-tighter text-white">مول <span class="text-red-600">بيت مضموم</span></h1>
         <p class="text-2xl font-black text-red-500 mb-2 italic">للبيع بالجملة والمفرد</p>
-        <p class="text-lg text-gray-500 font-bold tracking-[0.2em]">قلعة سكر - شارع المجمعات </p>
+        <p class="text-lg text-gray-500 font-bold tracking-[0.2em]">قلعة سكر - حي المعلمين - الشارع العام</p>
     </header>
 
     <div class="max-w-2xl mx-auto px-6 mb-20">
-        <input type="text" id="searchBox" onkeyup="filterCats()" placeholder="ابحث عن قسم..." class="w-full bg-[#0f0f0f] border border-white/5 p-7 rounded-[35px] outline-none focus:border-red-600 text-center font-bold text-2xl shadow-xl">
+        <input type="text" id="searchBox" onkeyup="filterCats()" placeholder="ابحث عن قسم..." class="w-full bg-[#0f0f0f] border border-white/5 p-7 rounded-[35px] outline-none focus:border-red-600 text-center font-bold text-2xl shadow-xl text-white">
     </div>
 
     <main class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 pb-32" id="catGrid"></main>
@@ -69,7 +79,7 @@
                 <h2 id="sectionTitle" class="text-3xl font-black text-red-600 italic"></h2>
                 <div class="w-10"></div>
             </div>
-            <input type="text" id="innerSearch" onkeyup="filterProductsRealTime()" placeholder="بحث في هذا القسم..." class="max-w-xl mx-auto w-full bg-black/50 border border-white/10 p-4 rounded-2xl outline-none focus:border-red-600 text-center font-bold">
+            <input type="text" id="innerSearch" onkeyup="filterProductsRealTime()" placeholder="بحث في هذا القسم..." class="max-w-xl mx-auto w-full bg-black/50 border border-white/10 p-4 rounded-2xl outline-none focus:border-red-600 text-center font-bold text-white">
         </div>
         
         <div class="max-w-6xl mx-auto p-8">
@@ -79,8 +89,8 @@
                     <button onclick="adminLogout()" class="bg-red-600/20 text-red-600 px-6 py-2 rounded-full font-bold">تسجيل خروج</button>
                 </div>
                 <div class="grid gap-6">
-                    <input type="text" id="pName" placeholder="اسم المنتج" class="w-full bg-black/40 border border-white/10 p-5 rounded-3xl outline-none text-white">
-                    <input type="text" id="pPrice" placeholder="السعر" class="w-full bg-black/40 border border-white/10 p-5 rounded-3xl outline-none text-white">
+                    <input type="text" id="pName" placeholder="اسم المنتج" class="w-full bg-black/40 border border-white/10 p-5 rounded-3xl outline-none text-white text-center">
+                    <input type="text" id="pPrice" placeholder="السعر" class="w-full bg-black/40 border border-white/10 p-5 rounded-3xl outline-none text-white text-center">
                     <input type="file" id="pImageFile" accept="image/*" class="w-full text-sm text-gray-500">
                     <button onclick="saveNewProduct()" id="uploadBtn" class="bg-red-600 py-5 rounded-3xl font-black text-2xl">نـشـر الآن 🔥</button>
                 </div>
@@ -121,27 +131,14 @@
         const categories = [{n: "قسم المكياج", i: "fa-magic"}, {n: "قسم القرطاسية", i: "fa-pen-fancy"}, {n: "قسم المنظفات", i: "fa-soap"}, {n: "مواد منزلية", i: "fa-blender"}, {n: "هدايا الحج والعمرة", i: "fa-kaaba"}, {n: "أعياد ميلاد", i: "fa-birthday-cake"}, {n: "ألعاب أطفال", i: "fa-robot"}, {n: "ساعات", i: "fa-clock"}, {n: "حقائب سفر", i: "fa-suitcase-rolling"}, {n: "جنط مدرسية", i: "fa-graduation-cap"}, {n: "حجابات وشالات", i: "fa-scroll"}, {n: "جوارب", i: "fa-socks"}, {n: "أقمشة نسائية", i: "fa-cut"}, {n: "خاوليات", i: "fa-swatchbook"}, {n: "حلويات", i: "fa-cookie-bite"}, {n: "بهارات", i: "fa-mortar-pestle"}, {n: "كوشات الأعراس", i: "fa-ring"}, {n: "عطور", i: "fa-air-freshener"}, {n: "شامبو", i: "fa-pump-soap"}, {n: "معجون الأسنان", i: "fa-tooth"}];
         let currentCat = ""; let cart = [];
 
-        // حل مشكلة زر الرجوع في الموبايل
         window.onpopstate = function() {
-            if(document.getElementById('sectionPage').classList.contains('active')) {
-                closeSection();
-                history.pushState(null, null, window.location.pathname);
-            }
-            if(document.getElementById('cartModal').classList.contains('active')) {
-                toggleCart();
-                history.pushState(null, null, window.location.pathname);
-            }
+            if(document.getElementById('sectionPage').classList.contains('active')) { closeSection(); history.pushState(null, null, window.location.pathname); }
+            if(document.getElementById('cartModal').classList.contains('active')) { toggleCart(); history.pushState(null, null, window.location.pathname); }
         };
 
         function renderCats() { document.getElementById('catGrid').innerHTML = categories.map(cat => `<div onclick="openSection('${cat.n}')" class="cat-card p-10 text-center"><div class="w-16 h-16 bg-red-600/10 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-all"><i class="fas ${cat.i} text-red-600 text-3xl"></i></div><h3 class="font-black text-xs text-white/80">${cat.n}</h3></div>`).join(''); }
         
-        function openSection(name) { 
-            currentCat = name; 
-            document.getElementById('sectionTitle').innerText = name; 
-            document.getElementById('sectionPage').classList.add('active'); 
-            history.pushState(null, null, window.location.pathname); // إضافة حالة للسجل
-            loadProducts(); 
-        }
+        function openSection(name) { currentCat = name; document.getElementById('sectionTitle').innerText = name; document.getElementById('sectionPage').classList.add('active'); history.pushState(null, null, window.location.pathname); loadProducts(); }
         function closeSection() { document.getElementById('sectionPage').classList.remove('active'); }
 
         function filterProductsRealTime() {
@@ -179,27 +176,59 @@
                         <div class="p-6 text-center">
                             <h4 class="text-xl font-black mb-1">${data[key].name}</h4>
                             <p class="text-red-600 text-2xl font-black mb-6">${data[key].price}</p>
-                            <button onclick="addToCart('${data[key].name}', '${data[key].price}')" class="w-full bg-white text-black py-4 rounded-2xl font-black hover:bg-red-600 hover:text-white transition-all">أضف للسلة <i class="fas fa-plus ml-2"></i></button>
+                            <button onclick="animateAddToCart(this, '${data[key].name}', '${data[key].price}')" class="w-full bg-white text-black py-4 rounded-2xl font-black hover:bg-red-600 hover:text-white transition-all">أضف للسلة <i class="fas fa-plus ml-2"></i></button>
                         </div>
                     </div>`).join('') : '<p class="col-span-full py-40 text-center opacity-10 text-3xl font-black">القسم فارغ</p>';
                 checkAdminState();
             });
         }
 
+        // تأثير السلة الطائرة
+        function animateAddToCart(btn, name, price) {
+            const cartBtn = document.getElementById('mainCartBtn');
+            const btnRect = btn.getBoundingClientRect();
+            const cartRect = cartBtn.getBoundingClientRect();
+
+            // إنشاء الأيقونة الطائرة
+            const flyIcon = document.createElement('i');
+            flyIcon.className = 'fas fa-shopping-basket flying-icon';
+            flyIcon.style.left = btnRect.left + (btnRect.width / 2) + 'px';
+            flyIcon.style.top = btnRect.top + 'px';
+            document.body.appendChild(flyIcon);
+
+            // تحريك الأيقونة باتجاه السلة
+            setTimeout(() => {
+                flyIcon.style.left = cartRect.left + (cartRect.width / 2) + 'px';
+                flyIcon.style.top = cartRect.top + (cartRect.height / 2) + 'px';
+                flyIcon.style.transform = 'scale(0.2) rotate(360deg)';
+                flyIcon.style.opacity = '0.5';
+            }, 50);
+
+            // إضافة المنتج للسلة الحقيقية بعد انتهاء الحركة
+            setTimeout(() => {
+                flyIcon.remove();
+                addToCart(name, price);
+                // هز أيقونة السلة الرئيسية للتأكيد
+                cartBtn.style.animation = 'shake 0.5s';
+                setTimeout(() => cartBtn.style.animation = '', 500);
+            }, 800);
+        }
+
+        function addToCart(n, p) { 
+            cart.push({n, p}); 
+            document.getElementById('cartCount').innerText = cart.length; 
+        }
+
         function deleteProduct(key) {
-            Swal.fire({ title: 'حذف؟', icon: 'warning', showCancelButton: true, confirmButtonText: 'نعم', cancelButtonText: 'لا' }).then(res => {
+            Swal.fire({ title: 'حذف؟', icon: 'warning', showCancelButton: true, confirmButtonText: 'نعم' }).then(res => {
                 if (res.isConfirmed) db.ref('products/' + currentCat + '/' + key).remove();
             });
         }
 
-        function addToCart(n, p) { cart.push({n, p}); document.getElementById('cartCount').innerText = cart.length; }
         function toggleCart() { 
             const modal = document.getElementById('cartModal'); 
             modal.classList.toggle('active'); 
-            if(modal.classList.contains('active')) {
-                renderCart();
-                history.pushState(null, null, window.location.pathname);
-            }
+            if(modal.classList.contains('active')) { renderCart(); history.pushState(null, null, window.location.pathname); }
         }
         
         function renderCart() { 
@@ -238,6 +267,16 @@
         renderCats(); checkAdminState();
         history.pushState(null, null, window.location.pathname);
     </script>
+    
+    <style>
+        @keyframes shake {
+            0% { transform: rotate(0deg); }
+            20% { transform: rotate(-10deg); }
+            40% { transform: rotate(10deg); }
+            60% { transform: rotate(-10deg); }
+            80% { transform: rotate(10deg); }
+            100% { transform: rotate(0deg); }
+        }
+    </style>
 </body>
 </html>
-
